@@ -14,23 +14,17 @@ exec sp_depends 'dbo.Sites' --Table
 
 ## Show SQL Server Table Attributes
 
-Alt + F1
+```
+--Click to select table and then press Alt + F1
 
-```
-Click to select table and then press Alt + F1
-```
-
-```
 --Show all table info
 exec sp_help 'dbo.Address';
-```
 
-```
 --Displays the definition that is used to create an object in multiple rows
 exec sp_helptext 'dbo.spGetAllUsers';
 ```
-## List of Logins in current SQL Server instance
 
+## List of Logins in current SQL Server instance
 ```
 select sp.name as login,
        sp.type_desc as login_type,
@@ -55,7 +49,7 @@ SELECT * FROM sysusers
 EXEC sp_helpuser
 ```
 
-## TRY CATCH RAISERROR
+## SQL Server TRY CATCH, RAISERROR and THROW for Error Handling
 
 https://www.mssqltips.com/sqlservertip/7997/sql-server-try-catch-raiserror-throw-error-handling/
 
@@ -81,6 +75,14 @@ END CATCH;
 https://www.mssqltips.com/sqlservertip/8004/sql-convert-examples-dates-integers-strings/
 
 ```
+DECLARE @Date DATE = '2024-01-01' -- date value
+SELECT CONVERT(VARCHAR(10), @Date, 101) AS [MM/DD/YYYY];
+GO
+
+DECLARE @Date DATE = '2024-01-01' -- current date example
+SELECT CONVERT(VARCHAR(10), @Date, 1) AS [MM/DD/YY];
+GO
+
 DECLARE @DateAndTime DATETIME = '2024-01-01 08:00:00.000'
 SELECT CONVERT(VARCHAR(30), @DateAndTime) AS [String];
 GO
@@ -92,7 +94,6 @@ GO
 DECLARE @Num INT = 5
 SELECT CONVERT(DECIMAL(3,2), @Num) AS [Decimal];
 GO
-
 ```
 
 # Git
