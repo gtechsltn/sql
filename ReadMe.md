@@ -1,9 +1,9 @@
 # SQL
 
-MS SQL Tips
+## MS SQL Tips
 https://www.mssqltips.com/
 
-SQL Server Table Attributes
+## Show SQL Server Table Attributes
 
 ```
 Click to select table and then press Alt + F1
