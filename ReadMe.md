@@ -12,6 +12,17 @@ exec sp_MSforeachtable 'SELECT "?", COUNT(*) FROM ?' --All Tables
 exec sp_depends 'dbo.Sites' --Table
 ```
 
+## Table Row Count
+```
+DECLARE @tblRowCount AS TABLE (Counts INT,
+                              TableName VARCHAR(255))
+
+INSERT INTO @tblRowCount (Counts,TableName)
+EXEC sp_MSforeachtable 'SELECT COUNT(1) As counts, "?" as tableName FROM ?'
+
+SELECT * FROM @TblRowCount ORDER BY Counts desc
+```
+
 ## Show SQL Server Table Attributes
 
 ```
