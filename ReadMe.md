@@ -3,7 +3,18 @@
 ## MS SQL Tips
 https://www.mssqltips.com/
 
+## System Stored Procedures (Transact-SQL)
+```
+exec sp_spaceused
+exec sp_help 'dbo.sites' --Table
+exec sp_helptext 'dbo.spGetAllUsers'; --SP
+exec sp_MSforeachtable 'SELECT "?", COUNT(*) FROM ?' --All Tables
+exec sp_depends 'dbo.Sites' --Table
+```
+
 ## Show SQL Server Table Attributes
+
+Alt + F1
 
 ```
 Click to select table and then press Alt + F1
@@ -15,16 +26,33 @@ exec sp_help 'dbo.Address';
 ```
 
 ```
---Show all stored procedure text
+--Displays the definition that is used to create an object in multiple rows
 exec sp_helptext 'dbo.spGetAllUsers';
 ```
-
+## List of Logins in current SQL Server instance
 
 ```
-USE MASTER
-GO 
+select sp.name as login,
+       sp.type_desc as login_type,
+       sl.password_hash,
+       sp.create_date,
+       sp.modify_date,
+       case when sp.is_disabled = 1 then 'Disabled'
+            else 'Enabled' end as status
+from sys.server_principals sp
+left join sys.sql_logins sl
+          on sp.principal_id = sl.principal_id
+where sp.type not in ('G', 'R')
+order by sp.name;
+```
 
-SELECT name as SQLServerLogIn, SID as SQLServerSID FROM sys.syslogins
+## Retrieve all Logins in SQL Server
+```
+SELECT name as SQLServerLogin, SID as SQLServerSID FROM master.sys.syslogins
+SELECT * FROM master.sys.server_principals
+SELECT * FROM master.sys.sql_logins;
+SELECT * FROM sysusers
+EXEC sp_helpuser
 ```
 
 ## TRY CATCH RAISERROR
