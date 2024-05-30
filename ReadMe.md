@@ -1,4 +1,113 @@
-# SQL
+# SQL Server
+
+https://docs.google.com/document/d/1TI1M1uBEM-wlhWN_9Q3LxJ_9RBeQgOTEALhFx48Zg6c/
+
+# SQL Server find tables with or without a certain property
+
+https://www.mssqltips.com/sqlservertip/3402/over-40-queries-to-find-sql-server-tables-with-or-without-a-certain-property/
+
+## SQL Server Tables without a Primary Key
+```
+SELECT [table] = s.name + N'.' + t.name 
+  FROM sys.tables AS t
+  INNER JOIN sys.schemas AS s
+  ON t.[schema_id] = s.[schema_id]
+  WHERE NOT EXISTS
+  (
+    SELECT 1 FROM sys.key_constraints AS k
+      WHERE k.[type] = N'PK'
+      AND k.parent_object_id = t.[object_id]
+  );
+```
+
+## SQL Server Tables without a Unique Constraint
+```
+SELECT [table] = s.name + N'.' + t.name 
+  FROM sys.tables AS t
+  INNER JOIN sys.schemas AS s
+  ON t.[schema_id] = s.[schema_id]
+  WHERE NOT EXISTS
+  (
+    SELECT 1 FROM sys.key_constraints AS k
+      WHERE k.[type] = N'UQ'
+      AND k,parent_object_id = t.[object_id]
+  );
+```
+
+## SQL Server Tables without a Clustered Index (Heap)
+```
+SELECT [table] = s.name + N'.' + t.name 
+  FROM sys.tables AS t
+  INNER JOIN sys.schemas AS s
+  ON t.[schema_id] = s.[schema_id]
+  WHERE NOT EXISTS
+  (
+    SELECT 1 FROM sys.indexes AS i
+      WHERE i.[object_id] = t.[object_id]
+      AND i.index_id = 1
+  );
+```
+
+## SQL Server Tables with a Default or Check Constraint
+```
+SELECT [table] = s.name + N'.' + t.name
+  FROM sys.tables AS t
+  INNER JOIN sys.schemas AS s
+  ON t.[schema_id] = s.[schema_id]
+  WHERE EXISTS
+  (
+    SELECT 1 FROM sys.default_constraints AS d
+      WHERE d.parent_object_id = t.[object_id]
+    UNION ALL
+    SELECT 1 FROM sys.check_constraints AS c
+      WHERE c.parent_object_id = t.[object_id]
+  );
+```
+
+## SQL Server Tables with More (or Less) Than X Rows
+```
+DECLARE @threshold INT;
+SET @threshold = 100000;
+
+SELECT [table] = s.name + N'.' + t.name
+  FROM sys.tables AS t
+  INNER JOIN sys.schemas AS s
+  ON t.[schema_id] = s.[schema_id]
+  WHERE EXISTS
+  (
+    SELECT 1 FROM sys.partitions AS p
+      WHERE p.[object_id] = t.[object_id]
+        AND p.index_id IN (0,1)
+      GROUP BY p.[object_id]
+      HAVING SUM(p.[rows]) > @threshold
+  );
+```
+
+## DATETIME columns: Checking for rows where system_type_id = 61
+```
+SELECT DISTINCT
+ QUOTENAME(OBJECT_SCHEMA_NAME([object_id])) 
+     + '.' + QUOTENAME(OBJECT_NAME([object_id]))
+ FROM sys.columns
+ WHERE [system_type_id] = 61;
+```
+  
+## SQL Server Index
+
+https://www.mssqltips.com/sqlservertip/1337/building-sql-server-indexes-in-ascending-vs-descending-order/
+
+```
+SELECT TOP 10 OrderDate, SubTotal FROM Purchasing.PurchaseOrderHeader ORDER BY OrderDate asc, SubTotal desc
+GO
+
+DROP INDEX [IX_PurchaseOrderHeader_OrderDate] ON [Purchasing].[PurchaseOrderHeader] 
+GO
+
+CREATE NONCLUSTERED INDEX [IX_PurchaseOrderHeader_OrderDate]
+ON [Purchasing].[PurchaseOrderHeader] ( [OrderDate] ASC, [SubTotal] DESC )
+GO
+```
+
 
 ## MS SQL Tips
 https://www.mssqltips.com/
