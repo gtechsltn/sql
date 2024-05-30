@@ -2,6 +2,47 @@
 
 https://docs.google.com/document/d/1TI1M1uBEM-wlhWN_9Q3LxJ_9RBeQgOTEALhFx48Zg6c/
 
++ master.sys.server_principals
++ master.sys.syslogins
++ master.sys.sql_logins;
++ sys.all_objects
++ sys.system_objects
++ sys.schemas
++ sys.tables
++ sys.columns
++ sys.objects
++ sys.procedures
++ sys.triggers
++ sys.indexes
++ sys.views
++ sys.partitions
++ sys.key_constraints
++ sys.default_constraints
++ sys.check_constraints
+
+# All objects
+```
+SELECT  o.type_desc AS Object_Type
+       ,  s.name AS Schema_Name
+       ,  o.name AS Object_Name
+    FROM  sys.objects o 
+    JOIN  sys.schemas s
+      ON  s.schema_id = o.schema_id
+   WHERE  o.type NOT IN ('S'  --SYSTEM_TABLE
+                        ,'PK' --PRIMARY_KEY_CONSTRAINT
+                        ,'D'  --DEFAULT_CONSTRAINT
+                        ,'C'  --CHECK_CONSTRAINT
+                        ,'F'  --FOREIGN_KEY_CONSTRAINT
+                        ,'IT' --INTERNAL_TABLE
+                        ,'SQ' --SERVICE_QUEUE
+                        ,'TR' --SQL_TRIGGER
+                        ,'UQ' --UNIQUE_CONSTRAINT
+                        )
+ORDER BY  Object_Type
+       ,  SCHEMA_NAME
+       ,  Object_Name
+```
+
 # SQL Server find tables with or without a certain property
 
 https://www.mssqltips.com/sqlservertip/3402/over-40-queries-to-find-sql-server-tables-with-or-without-a-certain-property/
@@ -23,12 +64,12 @@ SELECT [table] = s.name + N'.' + t.name
 ## SQL Server Tables without a Unique Constraint
 ```
 SELECT [table] = s.name + N'.' + t.name 
-  FROM sys.tables AS t
-  INNER JOIN sys.schemas AS s
+  FROM tables AS t
+  INNER JOIN schemas AS s
   ON t.[schema_id] = s.[schema_id]
   WHERE NOT EXISTS
   (
-    SELECT 1 FROM sys.key_constraints AS k
+    SELECT 1 FROM key_constraints AS k
       WHERE k.[type] = N'UQ'
       AND k.parent_object_id = t.[object_id]
   );
@@ -37,12 +78,12 @@ SELECT [table] = s.name + N'.' + t.name
 ## SQL Server Tables without a Clustered Index (Heap)
 ```
 SELECT [table] = s.name + N'.' + t.name 
-  FROM sys.tables AS t
-  INNER JOIN sys.schemas AS s
+  FROM tables AS t
+  INNER JOIN schemas AS s
   ON t.[schema_id] = s.[schema_id]
   WHERE NOT EXISTS
   (
-    SELECT 1 FROM sys.indexes AS i
+    SELECT 1 FROM indexes AS i
       WHERE i.[object_id] = t.[object_id]
       AND i.index_id = 1
   );
