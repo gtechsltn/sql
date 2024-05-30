@@ -5,6 +5,7 @@ https://docs.google.com/document/d/1TI1M1uBEM-wlhWN_9Q3LxJ_9RBeQgOTEALhFx48Zg6c/
 + master.sys.server_principals
 + master.sys.syslogins
 + master.sys.sql_logins;
++ master.dbo.sysdatabases
 + sys.all_objects
 + sys.system_objects
 + sys.schemas
@@ -19,6 +20,25 @@ https://docs.google.com/document/d/1TI1M1uBEM-wlhWN_9Q3LxJ_9RBeQgOTEALhFx48Zg6c/
 + sys.key_constraints
 + sys.default_constraints
 + sys.check_constraints
++ sp_help
++ sp_helptext
++ sp_helprole
++ sp_helpdb
+
+```
+SELECT name, suser_sname(sid), convert(nvarchar(11), crdate),dbid, cmptlevel
+FROM master.dbo.sysdatabases
+```
++ sp_password
+```
+exec sp_password @old = 'Abc@123$', @new = 'Abcde@12345-', @loginame = 'sa'
+```
+
+## Changing a password
+```
+ALTER LOGIN [sa] WITH PASSWORD = 'Abcde@12345-' OLD_PASSWORD = 'Abc@123$'
+GO
+```
 
 # All objects
 ```
