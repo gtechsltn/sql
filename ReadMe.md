@@ -30,7 +30,7 @@ SELECT [table] = s.name + N'.' + t.name
   (
     SELECT 1 FROM sys.key_constraints AS k
       WHERE k.[type] = N'UQ'
-      AND k,parent_object_id = t.[object_id]
+      AND k.parent_object_id = t.[object_id]
   );
 ```
 
