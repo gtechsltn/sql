@@ -33,6 +33,7 @@ FROM master.dbo.sysdatabases
 # QUERY Columns and Tables
 
 ## For SQL Server 2017+
+
 ```
 SELECT
     s.name AS SchemaName,
@@ -81,6 +82,110 @@ WHERE EXISTS (
 ORDER BY
     s.name,
     t.name;
+```
+
+## Stored Procedure for both of SQL Server 2016, 2017
+
+```
+DECLARE @MajorVersion int =
+    CAST(PARSENAME(CONVERT(varchar(128), SERVERPROPERTY('ProductVersion')), 4) AS int);
+
+IF @MajorVersion >= 14 -- SQL Server 2017+
+BEGIN
+    SELECT
+        s.name AS SchemaName,
+        t.name AS TableName,
+        STRING_AGG(c.name, ', ')
+            WITHIN GROUP (ORDER BY c.column_id) AS StubColumns
+    FROM sys.tables t
+    JOIN sys.schemas s
+        ON t.schema_id = s.schema_id
+    JOIN sys.columns c
+        ON c.object_id = t.object_id
+    WHERE c.name LIKE '%Stub%'
+    GROUP BY
+        s.name,
+        t.name
+    ORDER BY
+        s.name,
+        t.name;
+END
+ELSE
+BEGIN
+    SELECT
+        s.name AS SchemaName,
+        t.name AS TableName,
+        STUFF((
+            SELECT ', ' + c2.name
+            FROM sys.columns c2
+            WHERE c2.object_id = t.object_id
+              AND c2.name LIKE '%Stub%'
+            ORDER BY c2.column_id
+            FOR XML PATH(''), TYPE
+        ).value('.', 'nvarchar(max)'), 1, 2, '') AS StubColumns
+    FROM sys.tables t
+    JOIN sys.schemas s
+        ON t.schema_id = s.schema_id
+    WHERE EXISTS (
+        SELECT 1
+        FROM sys.columns c
+        WHERE c.object_id = t.object_id
+          AND c.name LIKE '%Stub%'
+    )
+    ORDER BY
+        s.name,
+        t.name;
+END
+```
+
+## Dynamic T-SQL for both of SQL Server 2016, 2017
+```
+DECLARE @sql nvarchar(max);
+
+IF CAST(PARSENAME(CONVERT(varchar(128), SERVERPROPERTY('ProductVersion')), 4) AS int) >= 14
+BEGIN
+    SET @sql = N'
+        SELECT
+            s.name AS SchemaName,
+            t.name AS TableName,
+            STRING_AGG(c.name, '', '')
+                WITHIN GROUP (ORDER BY c.column_id) AS StubColumns
+        FROM sys.tables t
+        JOIN sys.schemas s
+            ON t.schema_id = s.schema_id
+        JOIN sys.columns c
+            ON c.object_id = t.object_id
+        WHERE c.name LIKE ''%Stub%''
+        GROUP BY s.name, t.name
+        ORDER BY s.name, t.name;';
+END
+ELSE
+BEGIN
+    SET @sql = N'
+        SELECT
+            s.name AS SchemaName,
+            t.name AS TableName,
+            STUFF((
+                SELECT '', '' + c2.name
+                FROM sys.columns c2
+                WHERE c2.object_id = t.object_id
+                  AND c2.name LIKE ''%Stub%''
+                ORDER BY c2.column_id
+                FOR XML PATH(''''), TYPE
+            ).value(''.'', ''nvarchar(max)''), 1, 2, '''') AS StubColumns
+        FROM sys.tables t
+        JOIN sys.schemas s
+            ON t.schema_id = s.schema_id
+        WHERE EXISTS (
+            SELECT 1
+            FROM sys.columns c
+            WHERE c.object_id = t.object_id
+              AND c.name LIKE ''%Stub%''
+        )
+        ORDER BY s.name, t.name;';
+END
+
+EXEC sp_executesql @sql;
 ```
 
 # Change password
