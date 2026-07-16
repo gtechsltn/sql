@@ -24,15 +24,15 @@
 + sp_helpdb
 + sp_password
 
-# Databases
+# 1) Databases
 ```
 SELECT name, suser_sname(sid), convert(nvarchar(11), crdate),dbid, cmptlevel
 FROM master.dbo.sysdatabases
 ```
 
-# QUERY Columns and Tables
+# 2) QUERY Columns and Tables
 
-## For SQL Server 2017+
+## 2.1) For SQL Server 2017+
 
 ```
 SELECT
@@ -54,7 +54,7 @@ ORDER BY
     t.name;
 ```
 
-## For SQL Server 2016 or earlier
+## 2.2) For SQL Server 2016 or earlier
 
 Use **STUFF** + **FOR XML PATH('')** to concatenate the column names
 
@@ -84,7 +84,7 @@ ORDER BY
     t.name;
 ```
 
-## Stored Procedure for both of SQL Server 2016, 2017
+## 2.3) Stored Procedure for both of SQL Server 2016, 2017
 
 ```
 DECLARE @MajorVersion int =
@@ -138,7 +138,7 @@ BEGIN
 END
 ```
 
-## Dynamic T-SQL for both of SQL Server 2016, 2017
+## 2.4) Dynamic T-SQL for both of SQL Server 2016, 2017
 ```
 DECLARE @sql nvarchar(max);
 
@@ -188,18 +188,18 @@ END
 EXEC sp_executesql @sql;
 ```
 
-# Change password
+# 3) Change password
 ```
 exec sp_password @old = 'Abc@123$', @new = 'Abcde@12345-', @loginame = 'sa'
 ```
 
-## Changing a password
+## 3.1) Changing a password
 ```
 ALTER LOGIN [sa] WITH PASSWORD = 'Abcde@12345-' OLD_PASSWORD = 'Abc@123$'
 GO
 ```
 
-# All objects
+# 4) All objects
 ```
 SELECT  o.type_desc AS Object_Type
        ,  s.name AS Schema_Name
@@ -222,7 +222,7 @@ ORDER BY  Object_Type
        ,  Object_Name
 ```
 
-# All columns in all tables
+# 5) All columns in all tables
 ```
 SELECT	syso.name [Table],
 		sysc.name [Field], 
@@ -248,11 +248,11 @@ SELECT	syso.name [Table],
 ORDER BY 1,3,2,4,5,6
 ```
 
-# SQL Server find tables with or without a certain property
+# 6) SQL Server find tables with or without a certain property
 
 https://www.mssqltips.com/sqlservertip/3402/over-40-queries-to-find-sql-server-tables-with-or-without-a-certain-property/
 
-## SQL Server Tables without a Primary Key
+## 6.1) SQL Server Tables without a Primary Key
 ```
 SELECT [table] = s.name + N'.' + t.name 
   FROM sys.tables AS t
@@ -266,7 +266,7 @@ SELECT [table] = s.name + N'.' + t.name
   );
 ```
 
-## SQL Server Tables without a Unique Constraint
+## 6.2) SQL Server Tables without a Unique Constraint
 ```
 SELECT [table] = s.name + N'.' + t.name 
   FROM tables AS t
@@ -280,7 +280,7 @@ SELECT [table] = s.name + N'.' + t.name
   );
 ```
 
-## SQL Server Tables without a Clustered Index (Heap)
+## 6.3) SQL Server Tables without a Clustered Index (Heap)
 ```
 SELECT [table] = s.name + N'.' + t.name 
   FROM tables AS t
@@ -294,7 +294,7 @@ SELECT [table] = s.name + N'.' + t.name
   );
 ```
 
-## SQL Server Tables with a Default or Check Constraint
+## 6.4) SQL Server Tables with a Default or Check Constraint
 ```
 SELECT [table] = s.name + N'.' + t.name
   FROM sys.tables AS t
@@ -310,7 +310,7 @@ SELECT [table] = s.name + N'.' + t.name
   );
 ```
 
-## SQL Server Tables with More (or Less) Than X Rows
+## 6.5) SQL Server Tables with More (or Less) Than X Rows
 ```
 DECLARE @threshold INT;
 SET @threshold = 100000;
@@ -329,7 +329,7 @@ SELECT [table] = s.name + N'.' + t.name
   );
 ```
 
-## DATETIME columns: Checking for rows where system_type_id = 61
+## 6.6) DATETIME columns: Checking for rows where system_type_id = 61
 ```
 SELECT DISTINCT
  QUOTENAME(OBJECT_SCHEMA_NAME([object_id])) 
@@ -338,7 +338,7 @@ SELECT DISTINCT
  WHERE [system_type_id] = 61;
 ```
   
-## SQL Server Index
+## 6.7) SQL Server Index
 
 https://www.mssqltips.com/sqlservertip/1337/building-sql-server-indexes-in-ascending-vs-descending-order/
 
@@ -355,10 +355,10 @@ GO
 ```
 
 
-## MS SQL Tips
+## 6.8) MS SQL Tips
 https://www.mssqltips.com/
 
-## System Stored Procedures (Transact-SQL)
+## 6.9) System Stored Procedures (Transact-SQL)
 ```
 exec sp_spaceused
 exec sp_help 'dbo.sites' --Table
@@ -367,7 +367,7 @@ exec sp_MSforeachtable 'SELECT "?", COUNT(*) FROM ?' --All Tables
 exec sp_depends 'dbo.Sites' --Table
 ```
 
-## Table Row Count
+## 6.10) Table Row Count
 ```
 DECLARE @tblRowCount AS TABLE (Counts INT,
                               TableName VARCHAR(255))
@@ -378,7 +378,7 @@ EXEC sp_MSforeachtable 'SELECT COUNT(1) As counts, "?" as tableName FROM ?'
 SELECT * FROM @TblRowCount ORDER BY Counts desc
 ```
 
-## Show SQL Server Table Attributes
+## 6.11) Show SQL Server Table Attributes
 
 ```
 --Click to select table and then press Alt + F1
@@ -390,7 +390,7 @@ exec sp_help 'dbo.Address';
 exec sp_helptext 'dbo.spGetAllUsers';
 ```
 
-## List of Logins in current SQL Server instance
+## 6.12) List of Logins in current SQL Server instance
 ```
 select sp.name as login,
        sp.type_desc as login_type,
@@ -406,7 +406,7 @@ where sp.type not in ('G', 'R')
 order by sp.name;
 ```
 
-## Retrieve all Logins in SQL Server
+## 6.13) Retrieve all Logins in SQL Server
 ```
 SELECT name as SQLServerLogin, SID as SQLServerSID FROM master.sys.syslogins
 SELECT * FROM master.sys.server_principals
@@ -415,7 +415,7 @@ SELECT * FROM sysusers
 EXEC sp_helpuser
 ```
 
-## SQL Server TRY CATCH, RAISERROR and THROW for Error Handling
+## 6.14) SQL Server TRY CATCH, RAISERROR and THROW for Error Handling
 
 https://www.mssqltips.com/sqlservertip/7997/sql-server-try-catch-raiserror-throw-error-handling/
 
@@ -436,7 +436,7 @@ BEGIN CATCH
 END CATCH;
 ```
 
-## SQL Convert Examples for Dates, Integers, Strings and more
+## 6.15) SQL Convert Examples for Dates, Integers, Strings and more
 
 https://www.mssqltips.com/sqlservertip/8004/sql-convert-examples-dates-integers-strings/
 
@@ -462,7 +462,7 @@ SELECT CONVERT(DECIMAL(3,2), @Num) AS [Decimal];
 GO
 ```
 
-# Git
+# 7) Git
 
 ```
 echo "# asp-net-core" >> README.md
@@ -474,13 +474,13 @@ git remote add origin https://github.com/gtechsltn/sql.git
 git push -u origin master
 ```
 
-## Mastering SQL Server: Advanced Features Every DBA Should Know
+## 7.1) Mastering SQL Server: Advanced Features Every DBA Should Know
 
 https://medium.com/@nile.bits/mastering-sql-server-advanced-features-every-dba-should-know-bb0c28031c6f
 
 https://www.nilebits.com/blog/2024/04/sql-server-advanced-features-dba/
 
-## .NET 8 Web API project with an example of Offset and Keyset Pagination with EF Core
+## 7.2. .NET 8 Web API project with an example of Offset and Keyset Pagination with EF Core
 
 https://henriquesd.medium.com/pagination-in-a-net-web-api-with-ef-core-2e6cb032afb7
 
