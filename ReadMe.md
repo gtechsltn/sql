@@ -53,7 +53,10 @@ ORDER BY
     t.name;
 ```
 
-## For SQL Server 2016, use STUFF + FOR XML PATH('') to concatenate the column names.
+## For SQL Server 2016 or earlier
+
+Use **STUFF** + **FOR XML PATH('')** to concatenate the column names
+
 ```
 SELECT
     s.name AS SchemaName,
