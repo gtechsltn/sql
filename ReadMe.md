@@ -1,7 +1,5 @@
 # SQL Server
-
-https://docs.google.com/document/d/1TI1M1uBEM-wlhWN_9Q3LxJ_9RBeQgOTEALhFx48Zg6c/
-
+* https://docs.google.com/document/d/1TI1M1uBEM-wlhWN_9Q3LxJ_9RBeQgOTEALhFx48Zg6c/
 + master.sys.server_principals
 + master.sys.syslogins
 + master.sys.sql_logins;
@@ -24,12 +22,65 @@ https://docs.google.com/document/d/1TI1M1uBEM-wlhWN_9Q3LxJ_9RBeQgOTEALhFx48Zg6c/
 + sp_helptext
 + sp_helprole
 + sp_helpdb
++ sp_password
 
+# Databases
 ```
 SELECT name, suser_sname(sid), convert(nvarchar(11), crdate),dbid, cmptlevel
 FROM master.dbo.sysdatabases
 ```
-+ sp_password
+
+# QUERY Columns and Tables
+
+## For SQL Server 2017+
+```
+SELECT
+    s.name AS SchemaName,
+    t.name AS TableName,
+    STRING_AGG(c.name, ', ')
+        WITHIN GROUP (ORDER BY c.column_id) AS StubColumns
+FROM sys.tables t
+INNER JOIN sys.schemas s
+    ON t.schema_id = s.schema_id
+INNER JOIN sys.columns c
+    ON t.object_id = c.object_id
+WHERE c.name LIKE '%Stub%'
+GROUP BY
+    s.name,
+    t.name
+ORDER BY
+    s.name,
+    t.name;
+```
+
+## For SQL Server 2016, use STUFF + FOR XML PATH('') to concatenate the column names.
+```
+SELECT
+    s.name AS SchemaName,
+    t.name AS TableName,
+    STUFF((
+        SELECT ', ' + c2.name
+        FROM sys.columns c2
+        WHERE c2.object_id = t.object_id
+          AND c2.name LIKE '%Stub%'
+        ORDER BY c2.column_id
+        FOR XML PATH(''), TYPE
+    ).value('.', 'nvarchar(max)'), 1, 2, '') AS StubColumns
+FROM sys.tables t
+INNER JOIN sys.schemas s
+    ON t.schema_id = s.schema_id
+WHERE EXISTS (
+    SELECT 1
+    FROM sys.columns c
+    WHERE c.object_id = t.object_id
+      AND c.name LIKE '%Stub%'
+)
+ORDER BY
+    s.name,
+    t.name;
+```
+
+# Change password
 ```
 exec sp_password @old = 'Abc@123$', @new = 'Abcde@12345-', @loginame = 'sa'
 ```
